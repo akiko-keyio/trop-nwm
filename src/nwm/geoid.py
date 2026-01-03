@@ -85,7 +85,9 @@ class GeoidHeight(object):
         self.offset = None
         self.scale = None
 
-        file_path = Path(__file__).parent / f"{egm_type}.pgm"
+        file_path = (
+            Path(__file__).parent.parent.parent / "reference" / f"{egm_type}.pgm"
+        )
         if not file_path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
 

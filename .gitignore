@@ -6,11 +6,9 @@ dist/
 wheels/
 *.egg-info
 
-#data
+# Data and temp files
 data/
+temp/
 
 # Virtual environments
 .venv
-
-# outdate
-outdate/
