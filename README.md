@@ -164,7 +164,7 @@ $$
 H = \frac{R(\varphi) \cdot H_{gp}}{\dfrac{g(\varphi)}{g_0} \cdot R(\varphi) - H_{gp}}
 $$
 
-其中，$g(\varphi)$ 为重力加速度：
+其中， $g(\varphi)$ 为重力加速度：
 
 $$
 g(\varphi) = g_e \cdot \frac{1 + k \sin^2\varphi}{\sqrt{1 - e^2 \sin^2\varphi}}
@@ -292,7 +292,7 @@ $$
 \text{ZTD}_{top}=\text{ZHD} = \frac{0.0022768 \cdot p}{1 - 0.00266 \cos(2\varphi) - 0.00028 \cdot h \times 10^{-3}}
 $$
 
-其中 $p$ 为气压（hPa），$\varphi$ 为纬度（rad），$h$ 为椭球高（m）。
+其中 $p$ 为气压（hPa）， $\varphi$ 为纬度（rad）， $h$ 为椭球高（m）。
 
 > Davis, J. L., et al. (1985). Geodesy by radio interferometry: Effects of atmospheric modeling errors on estimates of baseline length. *Radio Science*, 20(6).
 
