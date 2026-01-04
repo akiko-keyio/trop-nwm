@@ -137,7 +137,7 @@ ZTDNWMGenerator(
 
 NWM 数据使用位势，需转换为椭球高
 $$
-\Phi(位势) \xrightarrow{} H_{gp}(位势高度) \xrightarrow{}  H(正高) \xrightarrow{} h(椭球高)
+\Phi(\text{位势}) \to H_{gp}(\text{位势高度}) \to H(\text{正高}) \to h(\text{椭球高})
 $$
 
 | 符号 | 名称 | 单位 | 说明 |
