@@ -137,9 +137,7 @@ ZTDNWMGenerator(
 
 NWM 数据使用位势，需转换为椭球高
 
-$$
-\Phi(\text{位势}) \to H_{gp}(\text{位势高度}) \to H(\text{正高}) \to h(\text{椭球高})
-$$
+$\Phi$ (位势) $\to$ $H_{gp}$ (位势高度) $\to$ $H$ (正高) $\to$ $h$ (椭球高)
 
 | 符号 | 名称 | 单位 | 说明 |
 |------|------|------|------|
@@ -166,7 +164,7 @@ $$
 H = \frac{R(\varphi) \cdot H_{gp}}{\dfrac{g(\varphi)}{g_0} \cdot R(\varphi) - H_{gp}}
 $$
 
-其中，$g(\varphi) $ 为重力加速度：
+其中，$g(\varphi)$ 为重力加速度：
 
 $$
 g(\varphi) = g_e \cdot \frac{1 + k \sin^2\varphi}{\sqrt{1 - e^2 \sin^2\varphi}}
