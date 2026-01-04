@@ -33,7 +33,7 @@ logging.basicConfig(
     datefmt="[%X]",
     handlers=[RichHandler(rich_tracebacks=True, show_path=False, console=console)],
 )
-logger = logging.getLogger("nwm")
+logger = logging.getLogger("trop_nwm")
 logger.setLevel(logging.INFO)
 
 # Suppress noisy third-party debug logs

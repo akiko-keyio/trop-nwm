@@ -1,4 +1,6 @@
-# NWM - 数值天气模式 ZTD 生成器
+# TROP-NWM - 数值天气模式 ZTD 生成器
+
+Tropospheric Delay Calculator from Numerical Weather Models
 
 基于数值天气预报（NWM/ERA5）三维气象数据计算 Zenith Tropospheric Delay (ZTD) 的高性能 Python 框架。
 
@@ -15,7 +17,7 @@ pip install -e .
 ## 快速入门
 
 ```python
-from nwm.ztd_nwm import ZTDNWMGenerator
+from trop_nwm.ztd_nwm import ZTDNWMGenerator
 import pandas as pd
 
 # 站点坐标
@@ -35,7 +37,7 @@ print(df)
 ```
 
 | time | site | ztd (mm) |
-|------|------|------------------|
+| :--- | :--- | :--- |
 | 2023-01-01 00:00:00 | BJFS | 2312.456 |
 | 2023-01-01 00:00:00 | WUHN | 2398.123 |
 
@@ -56,18 +58,18 @@ ZTDNWMGenerator(
     horizontal_interpolation_method="linear",
     resample_h=(None, None, 50),
     interp_to_site=True,
-    refractive_stats=None,
+    refractive_index_constants=None,
 )
 ```
 
-**Parameters**
+#### Parameters
 
 | 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
+| :--- | :--- | :--- | :--- |
 | `nwm_path` | *str* / *Path* | 必需 | NWM/ERA5 气象数据文件路径 |
 | `location` | *DataFrame* | `None` | 站点坐标，包含 `lat`, `lon`, `alt`, `site` 列 |
 | `egm_type` | *str* | `"egm96-5"` | 大地水准面模型：`"egm96-5"` / `"egm2008-1"` |
-| `vertical_level` | *str* | `"pressure_level"` | 垂直坐标模式（见[配置选项](#垂直坐标模式)） |
+| `vertical_level` | *str* | `"pressure_level"` | 垂直坐标模式（见[数值积分与边界条件](#数值积分与边界条件)） |
 | `n_jobs` | *int* | `-1` | 并行核心数，`-1` 使用全部 |
 | `batch_size` | *int* | `100_000` | 向量化/并行切换阈值 |
 | `horizontal_interpolation_method` | *str* | `"linear"` | 水平插值方法（传递给 `RegularGridInterpolator`） |
@@ -79,23 +81,21 @@ ZTDNWMGenerator(
 
 执行 ZTD 计算流程
 
-**Returns**
+#### Returns
 
 当 `interp_to_site=True` 时：
 
 | 列名 | 类型 | 说明 |
-|------|------|------|
+| :--- | :--- | :--- |
 | `time` | *datetime64* | 时间戳 |
 | `site` | *str* | 站点标识符 |
 | `ztd` | *float* | ZTD 值，单位：**mm** |
 
 当 `interp_to_site=False` 时，额外包含 `h` 列（高度层，单位：m）
 
-**Raises**
+#### Raises
 
 若最终结果中存在 NaN 值，抛出 `ValueError`
-
-
 
 ## 计算步骤
 
@@ -104,7 +104,7 @@ ZTDNWMGenerator(
 NWM 提供位势，需转换为椭球高，转换路径为： $\Phi$ (位势) $\to$ $H_{gp}$ (位势高度) $\to$ $H$ (正高) $\to$ $h$ (椭球高)；
 
 | 符号 | 名称 | 单位 | 说明 |
-|------|------|------|------|
+| :--- | :--- | :--- | :--- |
 | $\Phi$ | 位势 | m²/s² | NWM 原始变量 `z` |
 | $H_{gp}$ | 位势高度 | m | IFS 定义 $H_{gp} = \Phi / g_0$ |
 | $H$ | 正高 | m | 相对于大地水准面 |
@@ -125,7 +125,7 @@ R(\varphi) = \frac{a}{1 + f + m - 2f \sin^2\varphi}
 $$
 
 | 常数 | 值 | 描述 | 来源 |
-|------|-----|------|------|
+| :--- | :--- | :--- | :--- |
 | $g_0$ | $9.80665 \, \text{m/s}^2$ | WMO 标准重力 | ECMWF (2021) |
 | $g_e$ | $9.7803253359 \, \text{m/s}^2$ | WGS84 赤道重力 | Mahoney (2001) |
 | $k$ | $1.931853 \times 10^{-3}$ | Somigliana 常数 | Mahoney (2001) |
@@ -187,7 +187,7 @@ k_2' = k_2 - k_1 \frac{R_d}{R_v}
 $$
 
 | 常数 | 默认值 | 单位 | 来源 |
-|------|-----|------|------|
+| :--- | :--- | :--- | :--- |
 | $k_1$ | $77.689$ | K/hPa | Rüeger (2002) |
 | $k_2$ | $71.2952$ | K/hPa | Rüeger (2002) |
 | $k_3$ | $375463$ | K²/hPa | Rüeger (2002) |
@@ -197,7 +197,7 @@ $$
 通过 `refractive_index_constants` 参数可传入自定义折射率常数覆盖默认值：
 
 ```python
-from nwm.ztd_nwm import ZTDNWMGenerator
+from trop_nwm.ztd_nwm import ZTDNWMGenerator
 
 # 例：使用 Bevis et al. (1994) 的常数 (k1, k2, k3)
 custom = (77.60, 70.40, 373900.0)
@@ -212,8 +212,6 @@ zg = ZTDNWMGenerator(
 > Rüeger, J. M. (2002). Refractive index formulae for radio waves. *Proceedings of the FIG XXII International Congress*.
 >
 > ECMWF (2021). *IFS documentation CY47R3 – Part IV: Physical processes*. Chapter 12.
-
-
 
 ### 数值积分与边界条件
 

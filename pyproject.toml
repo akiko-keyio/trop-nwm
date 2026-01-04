@@ -1,7 +1,7 @@
 [project]
-name = "nwm"
+name = "trop-nwm"
 version = "0.1.0"
-description = "Add your description here"
+description = "Tropospheric Delay Calculator from Numerical Weather Models"
 readme = "README.md"
 authors = [
     { name = "Aki", email = "838013444@qq.com" }
@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [project.scripts]
-nwm = "nwm:main"
+trop-nwm = "trop_nwm:main"
 
 [build-system]
 requires = ["hatchling"]

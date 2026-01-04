@@ -14,8 +14,8 @@ from scipy.interpolate import (
     interp1d,
 )
 
-from nwm.geoid import GeoidHeight
-from nwm.log_utils import logger, track_step, joblib_rich_progress
+from trop_nwm.geoid import GeoidHeight
+from trop_nwm.log_utils import logger, track_step, joblib_rich_progress
 
 
 # ============================================================================
