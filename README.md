@@ -142,7 +142,7 @@ $\Phi$ (位势) $\to$ $H_{gp}$ (位势高度) $\to$ $H$ (正高) $\to$ $h$ (椭�
 | 符号 | 名称 | 单位 | 说明 |
 |------|------|------|------|
 | $\Phi$ | 位势 | m²/s² | NWM 原始变量 `z` |
-| $H_{gp}$ | 位势高度 | m | IFS 定义 $H_{gp}= \Phi / g_0$ |
+| $H_{gp}$ | 位势高度 | m | IFS 定义 $H_{gp} = \Phi / g_0$ |
 | $H$ | 正高 | m | 相对于大地水准面 |
 | $h$ | 椭球高 | m | 相对于 WGS84 椭球面 |
 
@@ -208,7 +208,7 @@ $$
 e = \frac{q \cdot p}{\epsilon + (1 - \epsilon) \cdot q}
 $$
 
-其中 $\epsilon = R_d / R_v \approx 0.622$（水汽与干空气气体常数比）。
+其中 $\epsilon = R_d / R_v \approx 0.622$ （水汽与干空气气体常数比）。
 
 > ECMWF (2021). *IFS documentation CY47R3 – Part IV: Physical processes*. Chapter 12. 
 
@@ -302,13 +302,13 @@ $$
 
 设置 `vertical_level = "h"` 时执行此步骤。将原始气压层上的气象参数 $(T, p, e)$ 重采样到等间距椭球高网格 $h_k$
 
-**插值** $(h_k \ge h_{bottom})$
+**插值** （$h_k \ge h_{bottom}$）
 
 - 气压 $p$ 和水汽压 $e$ 随高度呈指数变化，采用对数线性插值
 
 - 温度 $T$ 随高度近似线性变化，采用线性插值
 
-**外推** $(h_k < h_{bottom})$
+**外推** （$h_k < h_{bottom}$）
 
 - 水汽压保持定值：
 
@@ -328,7 +328,7 @@ $$
 p = p_{bottom} \cdot \exp\left(\frac{g_0 \cdot (h_{bottom} - h_k)}{R_d \cdot T_{mv}}\right)
 $$
 
-​	其中虚温
+其中虚温
 
 $$
 T_{mv} = 0.5(T_{bottom} + T) + 0.12 \cdot e_{bottom}
@@ -342,7 +342,7 @@ $$
 
 数值积分可生成所有 `location` 经纬度坐标、所有高度层三维 ZTD 数据。设置 `interp_to_site=True` 时将 ZTD 插值或外推至到站点高程
 
-**插值**（站点在相邻高度层之间，$h_{site} \ge h_{bottom}$）
+**插值**（站点在相邻高度层之间， $h_{site} \ge h_{bottom}$）
 
 - 采用对数线性插值。设 $h_i$ 和 $h_{i+1}$ 为包围站点的相邻高度层，则：
 
@@ -350,7 +350,7 @@ $$
 \ln \text{ZTD}(h_{site}) = \ln \text{ZTD}_i + \frac{h_{site} - h_i}{h_{i+1} - h_i} \cdot \left( \ln \text{ZTD}_{i+1} - \ln \text{ZTD}_i \right)
 $$
 
-**外推**（站点低于最低高度层，$h_{site} < h_{bottom}$）
+**外推**（站点低于最低高度层， $h_{site} < h_{bottom}$）
 
 - 先按上节方法外推底层气象参数到站点高度，计算站点折射率 $N_{site}$，然后梯形积分外推层的延迟增量：
 
@@ -360,8 +360,8 @@ $$
 
 - 站点 $ZTD_{site}$ 即为底层 $ZTD_{bottom}$ 附加增量
 
-  $$
-  ZTD_{site}=ZTD_{bottom}+\Delta ZTD
-  $$
-  
+$$
+ZTD_{site} = ZTD_{bottom} + \Delta ZTD
+$$
+
 
