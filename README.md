@@ -136,6 +136,7 @@ ZTDNWMGenerator(
 ### 高程系统转换
 
 NWM 数据使用位势，需转换为椭球高
+
 $$
 \Phi(\text{位势}) \to H_{gp}(\text{位势高度}) \to H(\text{正高}) \to h(\text{椭球高})
 $$
@@ -188,6 +189,7 @@ $$
 | $m$ | $0.003449787$ | WGS84 重力比 | Mahoney (2001) |
 
 **正高 → 椭球高**
+
 $$
 h = H + N
 $$
@@ -223,6 +225,7 @@ N = N_h + N_w
 $$
 
 **静力学折射率**
+
 $$
 N_h = k_1 R_d \rho_m
 $$
@@ -230,6 +233,7 @@ $$
 其中 $\rho_m = \rho_d + \rho_v$ 为湿空气密度。
 
 **非流体静力学折射率**
+
 $$
 N_w = k_2' \frac{e}{T} + k_3 \frac{e}{T^2}
 $$
@@ -285,6 +289,7 @@ $$
 - `vertical_level = "h"`：先将气象参数重采样到固定间隔的椭球高网格，然后在该网格上执行积分。该模式需要额外的气象参数垂直插值和外推
 
 顶层 ZTD 仅考虑流体静力学延迟 ZHD，采用 Davis 改进的 Saastamoinen 模型计算：
+
 $$
 \text{ZTD}_{top}=\text{ZHD} = \frac{0.0022768 \cdot p}{1 - 0.00266 \cos(2\varphi) - 0.00028 \cdot h \times 10^{-3}}
 $$
@@ -326,6 +331,7 @@ p = p_{bottom} \cdot \exp\left(\frac{g_0 \cdot (h_{bottom} - h_k)}{R_d \cdot T_{
 $$
 
 ​	其中虚温
+
 $$
 T_{mv} = 0.5(T_{bottom} + T) + 0.12 \cdot e_{bottom}
 $$
@@ -355,6 +361,7 @@ $$
 $$
 
 - 站点 $ZTD_{site}$ 即为底层 $ZTD_{bottom}$ 附加增量
+
   $$
   ZTD_{site}=ZTD_{bottom}+\Delta ZTD
   $$
