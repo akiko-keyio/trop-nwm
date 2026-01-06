@@ -17,8 +17,7 @@ from tqdm_joblib import ParallelPbar
 def _get_default_model_path():
     """获取默认模型文件路径，支持开发和安装环境。"""
     possible_paths = [
-        Path(__file__).parent / "data" / "ztdht_model_01.dat",  # 安装位置
-        Path(__file__).parent.parent.parent / "reference" / "ztdht_model_01.dat",  # 开发位置
+        Path(__file__).parent / "reference" / "ztdht_model_01.dat",  # 安装位置
     ]
     for path in possible_paths:
         if path.exists():

@@ -34,7 +34,7 @@ build-backend = "hatchling.build"
 packages = ["src/trop_nwm"]
 
 [tool.hatchling.build.targets.wheel.force-include]
-"src/trop_nwm/data" = "trop_nwm/data"
+"src/trop_nwm/reference" = "trop_nwm/reference"
 
 [dependency-groups]
 dev = [

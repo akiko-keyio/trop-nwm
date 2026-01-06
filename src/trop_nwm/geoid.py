@@ -86,11 +86,10 @@ class GeoidHeight(object):
         self.scale = None
 
         # 尝试多个可能的路径：
-        # 1. 安装后的位置：site-packages/trop_nwm/data/
-        # 2. 开发环境位置：项目根目录/reference/
+        # 1. 安装后的位置：site-packages/trop_nwm/reference/
+        # 2. 开发环境位置：项目根目录/reference/（已废弃，保留兼容）
         possible_paths = [
-            Path(__file__).parent / "data" / f"{egm_type}.pgm",  # 安装位置
-            Path(__file__).parent.parent.parent / "reference" / f"{egm_type}.pgm",  # 开发位置
+            Path(__file__).parent / "reference" / f"{egm_type}.pgm",  # 安装位置
         ]
         
         file_path = None
