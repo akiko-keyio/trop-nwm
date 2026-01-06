@@ -1,4 +1,4 @@
-# TROP-NWM - 数值天气模式 ZTD 生成器
+# TROP-NWM
 
 Tropospheric Delay Calculator from Numerical Weather Models
 
@@ -69,13 +69,13 @@ ZTDNWMGenerator(
 | `nwm_path` | *str* / *Path* | 必需 | NWM/ERA5 气象数据文件路径 |
 | `location` | *DataFrame* | `None` | 站点坐标，包含 `lat`, `lon`, `alt`, `site` 列 |
 | `egm_type` | *str* | `"egm96-5"` | 大地水准面模型：`"egm96-5"` / `"egm2008-1"` |
-| `vertical_level` | *str* | `"pressure_level"` | 垂直坐标模式（见[数值积分与边界条件](#数值积分与边界条件)） |
+| `vertical_level` | *str* | `"pressure_level"` | 垂直坐标模式（详见数值积分与边界条件)） |
 | `n_jobs` | *int* | `-1` | 并行核心数，`-1` 使用全部 |
 | `batch_size` | *int* | `100_000` | 向量化/并行切换阈值 |
 | `horizontal_interpolation_method` | *str* | `"linear"` | 水平插值方法（传递给 `RegularGridInterpolator`） |
 | `resample_h` | *tuple* | `(None, None, 50)` | 高度重采样 `(h_min, h_max, interval)`，单位：米 |
 | `interp_to_site` | *bool* | `True` | `True` 输出站点 ZTD，`False` 输出垂直剖面 |
-| `refractive_index_constants` | *tuple* | `(77.689, 71.2952, 375463.0)` | 自定义折射率常数 `(k1, k2, k3)`，单位见下文 |
+| `refractive_index_constants` | *tuple* | `(77.689, 71.2952, 375463.0)` | 自定义折射率常数 `(k1, k2, k3)` |
 
 ### *method* ZTDNWMGenerator.**run**()
 
@@ -89,7 +89,7 @@ ZTDNWMGenerator(
 | :--- | :--- | :--- |
 | `time` | *datetime64* | 时间戳 |
 | `site` | *str* | 站点标识符 |
-| `ztd` | *float* | ZTD 值，单位：**mm** |
+| `ztd` | *float* | ZTD 值，单位：mm |
 
 当 `interp_to_site=False` 时，额外包含 `h` 列（高度层，单位：m）
 
@@ -119,9 +119,11 @@ $$
 然后，将位势高度 $H_{gp}$ 转换为正高 $H$ (Mahoney, 2001) :
 
 $$
-H = \frac{R(\varphi) \cdot H_{gp}}{\dfrac{g(\varphi)}{g_0} \cdot R(\varphi) - H_{gp}} \\
-g(\varphi) = g_e \cdot \frac{1 + k \sin^2\varphi}{\sqrt{1 - e^2 \sin^2\varphi}} \\
-R(\varphi) = \frac{a}{1 + f + m - 2f \sin^2\varphi}
+\begin{aligned}
+H &= \frac{R(\varphi) \cdot H_{gp}}{\dfrac{g(\varphi)}{g_0} \cdot R(\varphi) - H_{gp}} \\
+g(\varphi) &= g_e \cdot \frac{1 + k \sin^2\varphi}{\sqrt{1 - e^2 \sin^2\varphi}} \\
+R(\varphi) &= \frac{a}{1 + f + m - 2f \sin^2\varphi}
+\end{aligned}
 $$
 
 | 常数 | 值 | 描述 | 来源 |
