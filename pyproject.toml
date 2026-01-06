@@ -18,6 +18,7 @@ dependencies = [
     "pyarrow>=20.0.0",
     "rich>=14.2.0",
     "scipy>=1.15.3",
+    "tqdm-joblib>=0.0.5",
     "xarray[io]>=2025.6.1",
     "zarr>=2.18.3",
 ]
@@ -28,6 +29,12 @@ trop-nwm = "trop_nwm:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatchling.build.targets.wheel]
+packages = ["src/trop_nwm"]
+
+[tool.hatchling.build.targets.wheel.force-include]
+"src/trop_nwm/data" = "trop_nwm/data"
 
 [dependency-groups]
 dev = [

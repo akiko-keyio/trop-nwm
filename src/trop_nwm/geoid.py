@@ -85,11 +85,25 @@ class GeoidHeight(object):
         self.offset = None
         self.scale = None
 
-        file_path = (
-            Path(__file__).parent.parent.parent / "reference" / f"{egm_type}.pgm"
-        )
-        if not file_path.exists():
-            raise FileNotFoundError(f"File not found: {file_path}")
+        # 尝试多个可能的路径：
+        # 1. 安装后的位置：site-packages/trop_nwm/data/
+        # 2. 开发环境位置：项目根目录/reference/
+        possible_paths = [
+            Path(__file__).parent / "data" / f"{egm_type}.pgm",  # 安装位置
+            Path(__file__).parent.parent.parent / "reference" / f"{egm_type}.pgm",  # 开发位置
+        ]
+        
+        file_path = None
+        for path in possible_paths:
+            if path.exists():
+                file_path = path
+                break
+        
+        if file_path is None:
+            paths_str = "\n  ".join(str(p) for p in possible_paths)
+            raise FileNotFoundError(
+                f"Geoid model file '{egm_type}.pgm' not found in any of these locations:\n  {paths_str}"
+            )
 
         with open(file_path, "rb") as f:
             line = f.readline()
