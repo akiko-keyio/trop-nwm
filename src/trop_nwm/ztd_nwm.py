@@ -225,6 +225,7 @@ class ZTDNWMGenerator:
             71.2952,
             375463.0,
         ),
+        progress_mode: str = "rich",
     ):
         """Initialize the ZTD generator.
 
@@ -259,7 +260,14 @@ class ZTDNWMGenerator:
         refractive_index_constants : tuple, default (77.689, 71.2952, 375463.0)
             Custom refractivity constants (k1, k2, k3).
             Default values from Rüeger (2002).
+        progress_mode : str, default "rich"
+            Progress display mode. Options: "rich" (fancy progress bars) or "simple" (logger.info).
+            Use "simple" to avoid conflicts with other frameworks that use rich.
         """
+        # Set progress mode
+        from trop_nwm.log_utils import set_progress_mode
+        set_progress_mode(progress_mode)
+        
         self.nwm_path = Path(nwm_path)
         self.location = location.copy() if location is not None else None
         self.egm_type = egm_type
