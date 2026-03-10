@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import gc
 from pathlib import Path
-from typing import Tuple
+from typing import Literal, Tuple
 
 import numpy as np
 import pandas as pd
@@ -949,13 +949,8 @@ class ZTDNWMGenerator:
         ds_site["site"] = ds.site
         return ds_site
 
-    def _run_pipeline(self) -> pd.DataFrame:
-        """Run steps 2-10 on the currently loaded ``self.ds`` and return a DataFrame.
-
-        Assumes ``self.ds`` is already loaded (via :meth:`read_met_file` or
-        sliced from a full dataset).  Resets ``self.top_level`` each call so
-        that successive batches do not leak state.
-        """
+    def _run_core_pipeline(self) -> None:
+        """Run core steps 2-9 on the currently loaded ``self.ds``."""
         self.top_level = None
 
         self.horizontal_interpolate()
@@ -968,57 +963,147 @@ class ZTDNWMGenerator:
         self.compute_top_level_delay()
         self.simpson_numerical_integration()
 
+    def _run_pipeline_long_dataset(self) -> xr.Dataset:
+        """Run pipeline and return Dataset for long-format conversion."""
         if self.interp_to_site:
-            ds_site = self.vertical_interpolate_to_site()
-            df = ds_site.to_dataframe().reset_index()[
-                ["time", "site", "number", "ztd"]
-            ]
+            return self._run_pipeline_site_dataset()
+
+        self._run_core_pipeline()
+        return self.ds[["ztd", "site", "h"]]
+
+    def _run_pipeline_site_dataset(self) -> xr.Dataset:
+        """Run pipeline and return site-level Dataset."""
+        if not self.interp_to_site:
+            raise ValueError("site-level output requires interp_to_site=True")
+
+        self._run_core_pipeline()
+        return self.vertical_interpolate_to_site()[["ztd", "site"]]
+
+    def _dataset_to_long_dataframe(self, ds_result: xr.Dataset) -> pd.DataFrame:
+        """Convert pipeline Dataset result to long-format DataFrame."""
+        ds_result = ds_result.assign(ztd=ds_result["ztd"] * 1000.0)  # m -> mm
+
+        single_number = "number" in ds_result.dims and ds_result.sizes["number"] == 1
+        if single_number:
+            ds_result = ds_result.isel(number=0, drop=True)
+
+        if self.interp_to_site:
+            cols = ["time", "site", "ztd"] if single_number else ["time", "site", "number", "ztd"]
         else:
-            df = self.ds.to_dataframe().reset_index()[
-                ["time", "site", "h", "number", "ztd"]
-            ]
+            cols = (
+                ["time", "site", "h", "ztd"]
+                if single_number
+                else ["time", "site", "h", "number", "ztd"]
+            )
+        return ds_result.to_dataframe().reset_index()[cols]
 
-        return df
+    def _run_pipeline_matrix(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Run pipeline and return matrix-format results."""
+        if not self.interp_to_site:
+            raise ValueError(
+                "output='matrix' requires interp_to_site=True to produce site x time matrix"
+            )
 
-    def run(self) -> pd.DataFrame:
+        ds_site = self._run_pipeline_site_dataset()
+
+        if ds_site.sizes["number"] != 1:
+            raise ValueError(
+                "output='matrix' requires a single ensemble member "
+                "(dimension 'number' size must be 1)"
+            )
+
+        ztd = (
+            ds_site["ztd"]
+            .isel(number=0)
+            .transpose("site_index", "time")
+            .values
+            * 1000.0
+        )  # m -> mm
+        site_index = ds_site["site"].values
+        time_index = ds_site["time"].values
+        return ztd, site_index, time_index
+
+    def run(
+        self, output: Literal["long", "matrix"] = "long"
+    ) -> pd.DataFrame | tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Execute the ZTD computation pipeline and return results.
 
+        Parameters
+        ----------
+        output : {"long", "matrix"}, default "long"
+            Output format. "long" returns the original long-format DataFrame.
+            "matrix" returns a tuple: (ztd, site_index, time_index), where
+            ztd has shape (n_site, n_time).
+
         Returns:
-            DataFrame with columns: time, site, [number], ztd (mm)
+            If output="long": DataFrame with columns time, site, [number], ztd (mm)
+            If output="matrix": tuple (ztd, site_index, time_index), with ztd in mm
         """
+        if output not in ("long", "matrix"):
+            raise ValueError("output must be either 'long' or 'matrix'")
+
         logger.debug(f"Start ZTD computation (vertical='{self.vertical_dimension}')")
         self.read_met_file()
 
         all_times = self.ds.time.values
 
         if self.time_batch_size is None or len(all_times) <= self.time_batch_size:
-            df = self._run_pipeline()
+            if output == "long":
+                ds_long = self._run_pipeline_long_dataset()
+            else:
+                ztd, site_index, time_index = self._run_pipeline_matrix()
         else:
             ds_full = self.ds
             batches = [
                 all_times[i : i + self.time_batch_size]
                 for i in range(0, len(all_times), self.time_batch_size)
             ]
-            results: list[pd.DataFrame] = []
+            results_long: list[xr.Dataset] = []
+            results_matrix: list[np.ndarray] = []
+            site_index = None
+            time_chunks: list[np.ndarray] = []
             for idx, batch_times in enumerate(batches, 1):
                 logger.info(
                     f"Time batch {idx}/{len(batches)} "
                     f"({len(batch_times)} steps)"
                 )
                 self.ds = ds_full.sel(time=batch_times).copy()
-                results.append(self._run_pipeline())
+                if output == "long":
+                    results_long.append(self._run_pipeline_long_dataset())
+                else:
+                    ztd_batch, site_batch, time_batch = self._run_pipeline_matrix()
+                    if site_index is None:
+                        site_index = site_batch
+                    elif not np.array_equal(site_index, site_batch):
+                        raise ValueError("Inconsistent site ordering across time batches")
+                    results_matrix.append(ztd_batch)
+                    time_chunks.append(time_batch)
                 self.ds = None
                 gc.collect()
             self.ds = ds_full
-            df = pd.concat(results, ignore_index=True)
+            if output == "long":
+                ds_long = xr.concat(
+                    results_long,
+                    dim="time",
+                    coords="minimal",
+                    data_vars="minimal",
+                    compat="override",
+                )
+            else:
+                ztd = np.concatenate(results_matrix, axis=1)
+                time_index = np.concatenate(time_chunks)
 
-        if len(df.number.drop_duplicates()) == 1:
-            df = df.drop(columns=["number"])
+        if output == "long":
+            if ds_long["ztd"].isnull().any().item():
+                raise ValueError("NaN values found in final ZTD results")
 
-        df["ztd"] = df["ztd"] * 1000  # m -> mm
+            df = self._dataset_to_long_dataframe(ds_long)
 
-        if df.isnull().values.any():
-            raise ValueError("NaN values found in final ZTD results")
+        else:
+            if np.isnan(ztd).any():
+                raise ValueError("NaN values found in final ZTD results")
 
         logger.debug("ZTD computation finished")
-        return df
+        if output == "long":
+            return df
+        return ztd, site_index, time_index
