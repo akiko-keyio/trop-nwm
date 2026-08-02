@@ -296,6 +296,16 @@ class ZTDNWMGenerator:
         except Exception as e:
             logger.error(f"Error Loading {self.nwm_path} For {e}")
             raise
+
+        if "z" not in self.ds and "gh" in self.ds:
+            self.ds = self.ds.rename({"gh": "z"})
+            self.ds["z"] = self.ds["z"] * _G0
+            self.ds["z"].attrs = {
+                "long_name": "Geopotential",
+                "standard_name": "geopotential",
+                "units": "m**2 s**-2",
+            }
+
         required = ["z", "t", "q"]
         for var in required:
             if var not in self.ds:
